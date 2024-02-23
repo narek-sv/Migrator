@@ -40,7 +40,7 @@ if let version1, let version2 {
 
 or use corressponding Swift Macro to do compile time version validation
 
-
+<img width="719" alt="Screenshot 2024-02-23 at 23 03 47" src="https://github.com/narek-sv/Migrator/assets/23353201/b25dbc55-ab5b-406d-8077-999adf57f6dc">
 
 ## Getting Started
 
