@@ -3,23 +3,23 @@ import SwiftSyntaxMacrosTestSupport
 import XCTest
 
 // Macro implementations build for the host, so the corresponding module is not available when cross-compiling. Cross-compiled tests may still make use of the macro itself in end-to-end tests.
-#if canImport(SemanticVersionMacros)
-import SemanticVersionMacros
+#if canImport(MigratorMacros)
+import MigratorMacros
 
 let testMacros: [String: Macro.Type] = [
-    "stringify": StringifyMacro.self,
+    "SemanticVersion": SemanticVersionMacro.self,
 ]
 #endif
 
-final class SemanticVersionTests: XCTestCase {
+final class SemanticVersionMacroTests: XCTestCase {
     func testMacro() throws {
-        #if canImport(SemanticVersionMacros)
+        #if canImport(MigratorMacros)
         assertMacroExpansion(
             """
-            #stringify(a + b)
+            #SemanticVersion("1.0.1")
             """,
             expandedSource: """
-            (a + b, "a + b")
+            SemanticVersion("1.0.1")!
             """,
             macros: testMacros
         )
@@ -29,14 +29,19 @@ final class SemanticVersionTests: XCTestCase {
     }
 
     func testMacroWithStringLiteral() throws {
-        #if canImport(SemanticVersionMacros)
+        #if canImport(MigratorMacros)
         assertMacroExpansion(
             #"""
-            #stringify("Hello, \(name)")
+            #SemanticVersion("invalid")
             """#,
             expandedSource: #"""
-            ("Hello, \(name)", #""Hello, \(name)""#)
+            #SemanticVersion("invalid")
             """#,
+            diagnostics: [
+                DiagnosticSpec(message: #"""
+                "invalid" is not a valid semantic version
+                """#, line: 1, column: 1)
+            ],
             macros: testMacros
         )
         #else
