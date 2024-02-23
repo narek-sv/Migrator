@@ -15,6 +15,16 @@ public struct SemanticVersion {
     public let prereleaseIdentifiers: [String]
     public let buildMetadataIdentifiers: [String]
     
+    public init(major: Int, minor: Int, patch: Int,
+                prereleaseIdentifiers: [String] = [],
+                buildMetadataIdentifiers: [String] = []) {
+        self.major = major
+        self.minor = minor
+        self.patch = patch
+        self.prereleaseIdentifiers = prereleaseIdentifiers
+        self.buildMetadataIdentifiers = buildMetadataIdentifiers
+    }
+    
     public static func isPrerelease<S: StringProtocol>(string: S) -> Bool {
         isDigit(string: string) ? isNumeric(string: string) : isIdentifier(string: string)
     }
