@@ -49,6 +49,7 @@ public actor Migrator {
     
     // The method throws SetupError only if the setup was incorrecet
     // It returns a dictionary containing information about execution of each task
+    @discardableResult
     public func start() async throws -> [TaskID: Status] {
         guard !alreadyStarted else { throw SetupError.alreadyStarted }
         alreadyStarted = true
@@ -67,7 +68,7 @@ public actor Migrator {
     
     private func executeTasks(taskIDs: [TaskID]) async {
         let remainingTasks = taskIDs
-            .filter { !isCompleted($0) && !isFailed($0) }
+            .filter { !isCompleted($0) && !isFailed($0, currentSession: true) }
             .filter {
                 if isExceeded($0) {
                     markTaskFailed(taskID: $0, error: .exceededAttempts)
@@ -77,8 +78,8 @@ public actor Migrator {
                 return true
             }
             .filter {
-                if dependencyGraph.adjacencyList[$0]!.contains(where: { isFailed($0) }) {
-                    markTaskFailed(taskID: $0, error: .dependencyFailed)
+                if let dependency = dependencyGraph.adjacencyList[$0]!.first(where: { isFailed($0) }) {
+                    markTaskFailed(taskID: $0, error: .dependencyFailed(taskID: dependency))
                     return false
                 }
                 
@@ -88,7 +89,6 @@ public actor Migrator {
         if remainingTasks.isEmpty {
             return
         }
-        
         
         let validExecutableTasks = remainingTasks
             .filter { !isInProgress($0) && dependencyGraph.adjacencyList[$0]!.allSatisfy({ isCompleted($0) }) }
@@ -121,18 +121,18 @@ public actor Migrator {
     private func isCompleted(_ taskID: TaskID) -> Bool {
         let status = self.status(for: taskID)
         
-        if case .success = status.completionStatus, !status.isInProgress {
+        if case .success = status.completionStatus, !status.isInProgress, !status.isIdle {
             return true
         }
         
         return false
     }
 
-    private func isFailed(_ taskID: TaskID) -> Bool {
+    private func isFailed(_ taskID: TaskID, currentSession: Bool = false) -> Bool {
         let status = self.status(for: taskID)
 
-        if case .failure = status.completionStatus, !status.isInProgress {
-            return true
+        if case let .failure(failure) = status.completionStatus, !status.isInProgress, !status.isIdle {
+            return currentSession ? failure.isCurrentSesssion : true
         }
         
         return false
@@ -140,12 +140,12 @@ public actor Migrator {
     
     private func isInProgress(_ taskID: TaskID) -> Bool {
         let status = self.status(for: taskID)
-        return status.isInProgress
+        return !status.isIdle && status.isInProgress 
     }
 
     private func isExceeded(_ taskID: TaskID) -> Bool {
         let status = self.status(for: taskID)
-        return status.failedAttempts >= (taskItems[taskID]?.maxAttempts ?? 0)
+        return status.failedAttempts >= taskItems[taskID]!.maxAttempts
     }
     
     // MARK: - Status Updates
@@ -172,7 +172,9 @@ public actor Migrator {
     
     private func markTaskFailed(taskID: TaskID, taskError: Error) {
         let status = self.status(for: taskID)
-        let failure = Failure(lastFailDate: Date(), reason: .taskFailed(errorMessage: taskError.localizedDescription))
+        let failure = Failure(lastFailDate: Date(), 
+                              reason: .taskFailed(errorMessage: taskError.localizedDescription),
+                              isCurrentSesssion: true)
         let newStatus = Status(taskID: taskID,
                                failedAttempts: status.failedAttempts + 1,
                                completionStatus: .failure(failure))
@@ -210,7 +212,7 @@ public actor Migrator {
         taskStatuses[id] ?? .init(taskID: id,
                                   failedAttempts: 0,
                                   completionStatus: .success(.init(completionDate: .init())),
-                                  isInProgress: true)
+                                  isIdle: true)
     }
 }
 
@@ -242,11 +244,11 @@ public extension Migrator {
     }
     
     enum ExecutionError: Codable, Sendable, Error {
-        // The task failed because one of it's dependencies failed
-        case dependencyFailed
-        
         // The task failed because it exceeded max attempts
         case exceededAttempts
+
+        // The task failed because one of it's dependencies failed
+        case dependencyFailed(taskID: TaskID)
         
         // The task failed because it throwed an error
         case taskFailed(errorMessage: String)
@@ -269,6 +271,13 @@ public extension Migrator {
         public let failedAttempts: Int
         public let completionStatus: Result<Success, Failure>
         fileprivate var isInProgress = false
+        fileprivate var isIdle = false
+        
+        enum CodingKeys: String, CodingKey {
+            case taskID
+            case failedAttempts
+            case completionStatus
+        }
     }
     
     struct Success: Sendable, Codable {
@@ -278,5 +287,11 @@ public extension Migrator {
     struct Failure: Sendable, Codable, Error {
         public let lastFailDate: Date
         public let reason: ExecutionError
+        fileprivate var isCurrentSesssion = false
+        
+        enum CodingKeys: String, CodingKey {
+            case lastFailDate
+            case reason
+        }
     }
 }
