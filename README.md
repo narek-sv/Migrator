@@ -83,6 +83,9 @@ The `start` method initiates the validation of registered tasks, ensuring there 
 
 Upon successful validation, the method proceeds to execute all tasks. Independant tasks are executed in parallel, enhancing efficiency. Upon completion, it provides detailed statuses for each task, including execution outcomes and reasons for any failures.
 
+---
+## License
 
+See [License.md](https://github.com/narek-sv/Migrator/blob/main/LICENSE) for more information.
 
 
