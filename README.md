@@ -84,6 +84,36 @@ The `start` method initiates the validation of registered tasks, ensuring there 
 Upon successful validation, the method proceeds to execute all tasks. Independant tasks are executed in parallel, enhancing efficiency. Upon completion, it provides detailed statuses for each task, including execution outcomes and reasons for any failures.
 
 ---
+## Supported Platforms
+
+| iOS | macOS | watchOS | tvOS | macCatalyst |
+| --- | --- | --- | --- | --- |
+| 13.0+ | 10.15+ | 6.0+ | 13.0+ | 13.0+ |
+
+---
+## Installation
+
+### [Swift Package Manager](https://swift.org/package-manager/)
+
+Swift Package Manager is a tool for automating the distribution of Swift code and is integrated into the `swift` compiler. 
+
+Once you have your Swift package set up, adding Migrator as a dependency is as easy as adding it to the `dependencies` value of your `Package.swift`.
+
+```swift
+dependencies: [
+    .package(url: "https://github.com/narek-sv/Migrator.git", .upToNextMajor(from: "1.0.0"))
+]
+```
+
+or
+
+* In Xcode select *File > Add Packages*.
+* Enter this project's URL: https://github.com/narek-sv/Migrator.git
+
+In any file you'd like to use KeyValueStorage in, don't forget to
+import the framework with `import Migrator`.
+
+---
 ## License
 
 See [License.md](https://github.com/narek-sv/Migrator/blob/main/LICENSE) for more information.
