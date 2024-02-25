@@ -1,6 +1,6 @@
 Pod::Spec.new do |spec|
   spec.name         = "MigratorSwift"
-  spec.version      = "1.0.0"
+  spec.version      = "1.0.2"
   
   spec.summary      = "Multipurpose tool suitable for migrations"
   spec.description  = "Migrator is a versatile Swift Package designed to streamline the execution of asynchronous tasks with dependency management on all Apple platforms."
@@ -14,6 +14,6 @@ Pod::Spec.new do |spec|
   spec.watchos.deployment_target = "6.0"
   spec.tvos.deployment_target = "13.0"
   
-  spec.source       = { :git => "https://github.com/narek-sv/Migrator.git", :tag => "v1.0.0" }
+  spec.source       = { :git => "https://github.com/narek-sv/Migrator.git", :tag => "v1.0.2" }
   spec.source_files = "Sources/**/*"
 end
