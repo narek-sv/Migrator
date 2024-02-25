@@ -16,7 +16,7 @@ let package = Package(
     products: [
         .library(
             name: "Migrator",
-            targets: ["Migrator", "MigratorCore"]
+            targets: ["Migrator"]
         ),
     ],
     dependencies: [
