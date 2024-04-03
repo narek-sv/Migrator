@@ -1,0 +1,30 @@
+name: Build & Test  
+  
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    strategy:
+        matrix:
+          os: [macos-14]
+          swift: ["5.10"]
+    runs-on: ${{ matrix.os }}
+    steps:
+    - uses: swift-actions/setup-swift@v2
+      name: Set up Swift
+      with:
+        swift-version: ${{ matrix.swift }}
+    - name: Get Swift version
+      run: swift --version
+    - uses: actions/checkout@v4
+      name: Checkout
+    - name: Build
+      run: swift build -v
+    - name: Test
+      run: swift test -v --enable-code-coverage
+    - name: Upload to Codecov
+      uses: codecov/codecov-action@v3
