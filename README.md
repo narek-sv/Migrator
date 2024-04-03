@@ -1,5 +1,11 @@
 # Migrator
 
+![Build & Test](https://github.com/narek-sv/Migrator/actions/workflows/swift.yml/badge.svg)
+[![Coverage](https://img.shields.io/badge/coverage->=95%25-brightgreen)](https://github.com/narek-sv/Migrator/actions/workflows/swift.yml)
+[![Swift Package Manager compatible](https://img.shields.io/badge/Swift%20Package%20Manager-compatible-success.svg)](https://github.com/apple/swift-package-manager)
+
+---
+
 Migrator is a versatile Swift Package designed to streamline the execution of asynchronous tasks with dependency management on all Apple platforms. It provides a robust solution for orchestrating tasks with complex dependencies, ensuring that each task is executed in the correct order, respecting the dependencies defined between them. With built-in error handling and retry capabilities, it significantly simplifies error recovery and enhances the reliability of task execution processes.
 
 ## Features
